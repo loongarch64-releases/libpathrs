@@ -1,4 +1,4 @@
-FROM lcr.loongnix.cn/library/golang:1.25
+FROM lcr.loongnix.cn/library/rust:1.97.1
 
 RUN apt-get update && apt-get install -y \
     bash \
@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libc6-dev \
     libseccomp-dev \
+    lld \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace

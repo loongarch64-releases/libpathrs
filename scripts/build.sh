@@ -13,6 +13,13 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 DISTS="${ROOT_DIR}/dists"
 SRCS="${ROOT_DIR}/srcs"
 
+# ======================================================================
+
+PATCHES="${ROOT_DIR}/patches"
+BUILD_DIR="${SRCS}/${VERSION}"
+DIST_DIR="${DISTS}/${VERSION}"
+
+
 mkdir -p "${DISTS}/${VERSION}" "${SRCS}"
 
 # ==========================================
@@ -27,9 +34,8 @@ prepare()
     echo "📦 [Prepare] Setting up build environment..."
     
     # TODO: 在此处添加准备命令
-    # 例如：apt-get update && apt-get install -y build-essential
-    # 例如：git clone -b ${VERSION} --depth=1 https://github.com/cyphar/libpathrs ${SRCS}/${VERSION}
-    # 例如：patch -p1 < patches/loongarch-fix.patch
+    rm -rf ${SRCS}/${VERSION}
+    git clone -b ${VERSION} --depth=1 https://github.com/cyphar/libpathrs ${SRCS}/${VERSION}
     
     echo "✅ [Prepare] Environment ready."
 }
@@ -38,12 +44,20 @@ prepare()
 build()
 {
     echo "🔨 [Build] Compiling source code..."
+    (
+        cd ${BUILD_DIR}
+        make release
+        mkdir -p ${BUILD_DIR}/.build/libpathrs-${VERSION}
+        ./install.sh --prefix=${BUILD_DIR}/.build/libpathrs-${VERSION}
+        ls ${BUILD_DIR}/.build/libpathrs-${VERSION}
+        (
+            cd ${BUILD_DIR}/.build
+            tar czvf libpathrs-${VERSION}-loongarch64-unknown-linux-gnu.tar.gz ./libpathrs-${VERSION}
+        )
+        
+    )
     
     # TODO: 在此处添加编译命令
-    # 例如：make -j$(nproc) ARCH=loongarch64
-    # 例如：cmake -DCMAKE_BUILD_TYPE=Release .. && make
-    
-
     echo "✅ [Build] Compilation finished."
 }
 
@@ -53,8 +67,7 @@ post_build()
     echo "📦 [Post-Build] Organizing artifacts..."
     
     # TODO: 在此处添加整理命令
-    # 例如：mkdir -p dists && cp binary dist/
-    # 例如：strip dist/binary
+    cp ${BUILD_DIR}/.build/*.tar.gz $DIST_DIR/
     
     echo "✅ [Post-Build] Artifacts ready in ./dists/${VERSION}."
 }
